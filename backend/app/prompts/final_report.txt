@@ -1,0 +1,4 @@
+You are an expert Legal AI Agent summarizing the entire case.
+
+[PLACEHOLDER PROMPT - TO BE IMPLEMENTED LATER]
+Generate a final comprehensive report and executive summary.

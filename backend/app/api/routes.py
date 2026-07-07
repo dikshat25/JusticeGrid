@@ -1,0 +1,141 @@
+from fastapi import APIRouter, BackgroundTasks, HTTPException
+from pydantic import BaseModel
+import uuid
+import time
+from app.graph.workflow import execute_graph
+from app.services.firestore_service import firestore_service
+from app.services.parser_service import parser_service
+from app.services.event_bus import event_bus
+from app.services.task_runner import task_runner
+
+router = APIRouter()
+
+class AnalyzeRequest(BaseModel):
+    case_id: str
+    document_urls: list[str] = []
+
+async def process_case_background(case_id: str, document_urls: list[str]):
+    # 1. Load Case from Firestore
+    case_data = await firestore_service.get_case(case_id)
+    if not case_data:
+        print(f"[ERROR] Case {case_id} not found.")
+        return
+
+    # 2. Publish Event
+    event_bus.publish("CaseAnalysisStarted", {"case_id": case_id})
+
+    # 3. Load & Parse Documents
+    parsed_docs = []
+    for url in document_urls:
+        text = await parser_service.extract_text(url)
+        parsed_docs.append({"url": url, "text": text})
+
+    # 4. Prepare Initial State
+    run_id = f"run_{uuid.uuid4().hex[:8]}"
+    initial_state = {
+        "run_id": run_id,
+        "case_id": case_id,
+        "case_data": case_data,
+        "documents": parsed_docs,
+        "normalized_case": {},
+        "errors": []
+    }
+
+    # 5. Execute LangGraph Workflow
+    final_state = await execute_graph(initial_state)
+
+    # 6. Store Results
+    await firestore_service.save_graph_run(run_id, final_state)
+    
+    # Save the final report attached directly to the case
+    # Also save the full transcript for the frontend Courtroom replay
+    report_data = {
+        "final_report": final_state.get("final_report", {}),
+        "merged_data": final_state.get("merged_data", {}),
+        "transcript": final_state.get("transcript", []),
+        "telemetry": final_state.get("telemetry", {}),
+        "execution_time": final_state.get("execution_time", 0)
+    }
+    await firestore_service.save_agent_report(case_id, report_data)
+    
+    # Update the parent case document
+    await firestore_service.update_case_analysis_status(case_id, "Resolved")
+
+    # 7. Publish Completion Event
+    event_bus.publish("CaseAnalysisCompleted", {"case_id": case_id, "run_id": run_id})
+
+@router.post("/analyze-case")
+async def analyze_case(request: AnalyzeRequest, background_tasks: BackgroundTasks):
+    task_runner.enqueue(
+        background_tasks, 
+        process_case_background, 
+        request.case_id, 
+        request.document_urls
+    )
+    return {"status": "Accepted", "message": f"Analysis started for case {request.case_id}"}
+
+@router.get("/health")
+async def health_check():
+    from app.services.llm_service import llm_service
+    
+    res = {
+        "backend": "healthy",
+        "firestore": "connected" if firestore_service.db else "disconnected",
+        "langgraph": "ready"
+    }
+    
+    import time
+    for provider in llm_service.providers:
+        status = "offline"
+        if time.time() >= getattr(provider, "unhealthy_until", 0):
+            status = "connected"
+        else:
+            status = "cooldown"
+            
+        res[provider.name.lower()] = {
+            "status": status,
+            "model": getattr(provider, "model_name", "unknown")
+        }
+    
+    return res
+
+class TestGeminiRequest(BaseModel):
+    prompt: str
+
+class TestGeminiResponse(BaseModel):
+    status: str
+    result: dict
+
+@router.post("/test-gemini")
+async def test_gemini(request: TestGeminiRequest):
+    from app.services.llm_service import llm_service
+    try:
+        from app.schemas.agent_schemas import AgentThinkingResult
+        response = await llm_service.generate_with_fallback(prompt=request.prompt, schema=AgentThinkingResult)
+        return {"status": "success", "result": response["result"].model_dump(), "provider": response["provider_used"]}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/debug/{case_id}")
+async def debug_case(case_id: str):
+    if not firestore_service.db:
+        raise HTTPException(status_code=500, detail="Firestore not connected")
+        
+    runs = firestore_service.db.collection('graph_runs').where('case_id', '==', case_id).stream()
+    runs_list = [r.to_dict() for r in runs]
+    
+    if not runs_list:
+        raise HTTPException(status_code=404, detail=f"No graph runs found for {case_id}")
+        
+    latest_run = sorted(runs_list, key=lambda x: x.get('started_at', ''), reverse=True)[0]
+    
+    return {
+        "run_id": latest_run.get("run_id"),
+        "status": latest_run.get("status"),
+        "execution_time": latest_run.get("execution_time"),
+        "errors": latest_run.get("errors", []),
+        "timeline": latest_run.get("timeline", []),
+        "transcript": latest_run.get("transcript", [])
+    }

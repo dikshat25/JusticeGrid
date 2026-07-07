@@ -1,0 +1,231 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-cream: #F8F4EC;
+  --accent-brown: #6B4F3A;
+  --accent-brown-hover: #5A4231;
+  --accent-brown-light: #E8DCC8;
+  --text-dark: #3A2B20;
+  --text-muted: #7A695B;
+  --card-beige: #FDFBF7;
+  --white: #FFFFFF;
+  
+  /* System colors for status */
+  --status-urgent: #D94A4A;
+  --status-eligible: #4A9A6A;
+  --status-pending: #D9A04A;
+  
+  --shadow-sm: 0 2px 4px rgba(107, 79, 58, 0.05);
+  --shadow-md: 0 4px 12px rgba(107, 79, 58, 0.08);
+  --shadow-lg: 0 12px 24px rgba(107, 79, 58, 0.12);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  
+  --sidebar-width: 260px;
+  --navbar-height: 70px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-cream);
+  color: var(--text-dark);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  background: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-dark);
+  font-weight: 600;
+  margin-bottom: 0.5em;
+}
+
+/* Base Layout Classes */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+}
+
+.page-container {
+  padding: 2rem;
+  flex: 1;
+  overflow-y: auto;
+  margin-top: var(--navbar-height);
+}
+
+/* Card Utility */
+.card {
+  background: var(--card-beige);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  border: 1px solid rgba(107, 79, 58, 0.05);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Button Utilities */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--accent-brown);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: var(--accent-brown-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-outline {
+  border: 1px solid var(--accent-brown);
+  color: var(--accent-brown);
+}
+
+.btn-outline:hover {
+  background: var(--accent-brown-light);
+}
+
+/* Badge Utilities */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.badge-urgent {
+  background: rgba(217, 74, 74, 0.1);
+  color: var(--status-urgent);
+}
+
+.badge-eligible {
+  background: rgba(74, 154, 106, 0.1);
+  color: var(--status-eligible);
+}
+
+.badge-pending {
+  background: rgba(217, 160, 74, 0.1);
+  color: var(--status-pending);
+}
+
+/* Table Utilities */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th {
+  padding: 1rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-bottom: 2px solid rgba(107, 79, 58, 0.1);
+}
+
+.data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(107, 79, 58, 0.05);
+  font-size: 0.95rem;
+}
+
+.data-table tr {
+  transition: background-color 0.2s;
+}
+
+.data-table tr:hover {
+  background-color: var(--accent-brown-light);
+}
+
+/* Form Utilities */
+.input-group {
+  margin-bottom: 1rem;
+}
+
+.input-label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(107, 79, 58, 0.2);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text-dark);
+  transition: border-color 0.2s;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent-brown);
+  box-shadow: 0 0 0 3px rgba(107, 79, 58, 0.1);
+}
+
+/* Loading */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--accent-brown-light);
+  border-top-color: var(--accent-brown);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

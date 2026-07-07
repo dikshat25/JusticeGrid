@@ -1,0 +1,380 @@
+.home-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-cream);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.cinematic-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.parallax-icon {
+  position: absolute;
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 5%;
+  background-color: transparent;
+  position: relative;
+  z-index: 10;
+}
+
+.home-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+}
+
+.brand-icon-header {
+  color: var(--accent-brown);
+}
+
+.home-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.home-main {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-section {
+  padding: 8rem 5% 6rem;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hero-badge {
+  margin-bottom: 1.5rem;
+  display: inline-block;
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--text-main);
+  margin-bottom: 1.5rem;
+  letter-spacing: -1px;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.hero-btn {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+}
+
+/* Section Common */
+.section-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 3rem;
+}
+
+/* Workflow Section */
+.workflow-section {
+  padding: 6rem 5%;
+  background: white;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.workflow-diagram {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  min-width: 200px;
+}
+
+.flow-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--bg-cream);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: var(--accent-brown);
+  border: 2px solid rgba(107, 79, 58, 0.1);
+  box-shadow: var(--shadow-md);
+}
+
+.flow-step h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-main);
+}
+
+.flow-step p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.flow-arrow {
+  color: var(--accent-brown);
+  opacity: 0.5;
+}
+
+/* Architecture Section */
+.architecture-section {
+  padding: 6rem 5%;
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.arch-content {
+  flex: 1;
+}
+
+.arch-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.arch-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.arch-features {
+  list-style: none;
+  padding: 0;
+}
+
+.arch-features li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.arch-visual {
+  flex: 1;
+  background: #fbfbf9;
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 12px;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.graph-node {
+  background: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  border: 2px solid var(--accent-brown);
+  font-weight: 600;
+  color: var(--accent-brown);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.graph-split {
+  display: flex;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.graph-split::before {
+  content: '';
+  position: absolute;
+  top: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 2rem;
+  background: rgba(107, 79, 58, 0.3);
+}
+
+.top-node::after {
+  content: '';
+  position: absolute;
+  bottom: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 2rem;
+  background: rgba(107, 79, 58, 0.3);
+}
+
+.bottom-node::before {
+  content: '';
+  position: absolute;
+  top: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 2rem;
+  background: rgba(107, 79, 58, 0.3);
+}
+
+/* Features Section */
+.features-section {
+  padding: 6rem 5%;
+  background: var(--bg-cream);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  padding: 2rem;
+  text-align: left;
+  border-top: 4px solid var(--accent-brown);
+}
+
+.feature-icon {
+  background-color: rgba(107, 79, 58, 0.1);
+  color: var(--accent-brown);
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.feature-card h3 {
+  font-size: 1.25rem;
+  color: var(--text-main);
+  margin-bottom: 1rem;
+}
+
+.feature-card p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Footer */
+.home-footer {
+  background-color: var(--text-main);
+  color: white;
+  padding: 4rem 5% 2rem;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto 3rem;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.brand-icon-footer {
+  color: var(--accent-brown);
+}
+
+.footer-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.footer-links span {
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.footer-links span:hover {
+  color: white;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .hero-title { font-size: 2.5rem; }
+  .architecture-section { flex-direction: column; }
+  .workflow-diagram { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); margin: 1rem 0; }
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
+}

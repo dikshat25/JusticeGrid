@@ -1,0 +1,142 @@
+{
+  "run_id": "run_c4c1dd58",
+  "status": "COMPLETED",
+  "execution_time": 2.07,
+  "errors": [],
+  "timeline": [
+    {
+      "started": "2026-07-08 01:31:12.862464",
+      "duration": 0.0,
+      "completed": "2026-07-08 01:31:12.862464",
+      "agent": "Intake Agent"
+    },
+    {
+      "started": "2026-07-08 01:31:12.869976",
+      "duration": 0.51,
+      "completed": "2026-07-08 01:31:13.385408",
+      "agent": "Eligibility Agent"
+    },
+    {
+      "started": "2026-07-08 01:31:13.386307",
+      "duration": 0.51,
+      "completed": "2026-07-08 01:31:13.902140",
+      "agent": "Delay Agent"
+    },
+    {
+      "started": "2026-07-08 01:31:13.904913",
+      "duration": 0.0,
+      "completed": "2026-07-08 01:31:13.904913",
+      "agent": "Financial Agent"
+    },
+    {
+      "started": "2026-07-08 01:31:13.904913",
+      "duration": 0.51,
+      "completed": "2026-07-08 01:31:14.418430",
+      "agent": "Strategy Agent"
+    },
+    {
+      "started": "2026-07-08 01:31:14.421047",
+      "duration": 0.0,
+      "completed": "2026-07-08 01:31:14.421047",
+      "agent": "Merge Node"
+    },
+    {
+      "started": "2026-07-08 01:31:14.422604",
+      "duration": 0.51,
+      "completed": "2026-07-08 01:31:14.934048",
+      "agent": "Judge"
+    },
+    {
+      "started": "2026-07-08 01:31:14.936371",
+      "duration": 0.0,
+      "completed": "2026-07-08 01:31:14.936371",
+      "agent": "Final Report Generator"
+    }
+  ],
+  "transcript": [
+    {
+      "confidence": 85,
+      "duration": 0.51,
+      "type": "analysis",
+      "message": "Mock reasoning",
+      "speaker": "Eligibility Agent",
+      "recommendation": "Mock recommendation",
+      "legal_references": "Mock legal_references",
+      "status": "completed",
+      "animation": "speaking",
+      "timestamp": "2026-07-08 01:31:13.385408",
+      "finding": "Mock finding",
+      "provider": "MockProvider"
+    },
+    {
+      "confidence": 85,
+      "duration": 0.51,
+      "type": "counter_argument",
+      "message": "Mock reasoning",
+      "speaker": "Delay Agent",
+      "recommendation": "Mock recommendation",
+      "legal_references": "Mock legal_references",
+      "status": "completed",
+      "animation": "speaking",
+      "timestamp": "2026-07-08 01:31:13.902140",
+      "finding": "Mock finding",
+      "provider": "MockProvider"
+    },
+    {
+      "confidence": 100,
+      "duration": 0.0,
+      "type": "analysis",
+      "message": "Based on the severity of charges (ipc 420), the standard procedural surety is ₹50000.",
+      "speaker": "Financial Agent",
+      "recommendation": "Require standard local surety or personal bond if indigent.",
+      "legal_references": "Standard Procedural Guidelines",
+      "status": "completed",
+      "animation": "speaking",
+      "timestamp": "2026-07-08 01:31:13.904913",
+      "finding": "Calculated baseline surety amount at ₹50000.",
+      "provider": "Deterministic"
+    },
+    {
+      "confidence": 85,
+      "duration": 0.51,
+      "type": "counter_argument",
+      "message": "Mock reasoning",
+      "speaker": "Strategy Agent",
+      "recommendation": "Mock recommendation",
+      "legal_references": "Mock legal_references",
+      "status": "completed",
+      "animation": "speaking",
+      "timestamp": "2026-07-08 01:31:14.418430",
+      "finding": "Mock finding",
+      "provider": "MockProvider"
+    },
+    {
+      "confidence": 85,
+      "duration": 0.51,
+      "type": "verdict",
+      "message": "Mock reasoning",
+      "speaker": "Judge",
+      "recommendation": "Mock recommendation",
+      "legal_references": "Mock legal_references",
+      "status": "completed",
+      "animation": "speaking",
+      "timestamp": "2026-07-08 01:31:14.934048",
+      "finding": "Mock finding",
+      "provider": "MockProvider"
+    },
+    {
+      "confidence": 100,
+      "duration": 0.0,
+      "type": "verdict",
+      "message": "All agent transcripts have been assembled into the final courtroom record.",
+      "speaker": "Final Report Generator",
+      "recommendation": "Proceed with findings.",
+      "legal_references": "N/A",
+      "status": "completed",
+      "animation": "speaking",
+      "timestamp": "2026-07-08 01:31:14.936371",
+      "finding": "Final evaluation compiled successfully.",
+      "provider": "Deterministic"
+    }
+  ]
+}
