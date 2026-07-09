@@ -24,7 +24,7 @@ const Courtroom = ({ caseId, onAnalysisComplete }) => {
     const connect = async () => {
       try {
         setStatus('connecting');
-        const res = await fetch('http://127.0.0.1:8000/api/v1/analyze-case', {
+        const res = await fetch('https://justicegrid-backend.onrender.com/api/v1/analyze-case', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ case_id: caseId, document_urls: [] })
@@ -32,7 +32,7 @@ const Courtroom = ({ caseId, onAnalysisComplete }) => {
         
         if (!res.ok) throw new Error('Failed to start analysis');
 
-        ws = new WebSocket(`ws://127.0.0.1:8000/api/v1/ws/${caseId}`);
+        ws = new WebSocket(`wss://justicegrid-backend.onrender.com/api/v1/ws/${caseId}`);
         
         ws.onopen = () => {
           if (isMounted) setStatus('active');

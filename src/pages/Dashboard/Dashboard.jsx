@@ -71,7 +71,7 @@ const Dashboard = () => {
     const fetchAncillaryData = async () => {
       try {
         if (isAdmin || isLawyer) {
-          const healthRes = await fetch('http://127.0.0.1:8000/api/v1/health').then(r => r.ok ? r.json() : null).catch(() => null);
+          const healthRes = await fetch('https://justicegrid-backend.onrender.com/api/v1/health').then(r => r.ok ? r.json() : null).catch(() => null);
           setHealth(healthRes);
         }
         if (currentUser) {

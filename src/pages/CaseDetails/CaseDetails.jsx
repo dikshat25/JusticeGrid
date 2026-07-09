@@ -35,7 +35,7 @@ const CaseDetails = () => {
     formData.append('uploaded_by', userData?.role || 'family');
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/documents/upload', {
+      const response = await fetch('https://justicegrid-backend.onrender.com/api/v1/documents/upload', {
         method: 'POST',
         body: formData,
       });
