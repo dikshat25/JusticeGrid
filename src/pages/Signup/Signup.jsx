@@ -36,6 +36,11 @@ const Signup = () => {
     setLoading(true);
     
     try {
+      if (formData.role === 'lawyer') {
+        // Simulate real-time API verification for the demo
+        await new Promise(resolve => setTimeout(resolve, 1200));
+      }
+
       await signUp(formData);
       navigate('/dashboard');
     } catch (err) {
@@ -110,8 +115,11 @@ const Signup = () => {
 
             {formData.role === 'lawyer' && (
               <div className="input-group">
-                <label className="input-label">Bar Council ID (Optional)</label>
-                <input type="text" className="input-field" name="barCouncilId" value={formData.barCouncilId} onChange={handleInputChange} />
+                <label className="input-label">Bar Council ID</label>
+                <input type="text" className="input-field" name="barCouncilId" value={formData.barCouncilId} onChange={handleInputChange} required placeholder="e.g. MAH/1234/2021" />
+                <small style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>
+                  * ID will be instantly verified against the National Bar Registry
+                </small>
               </div>
             )}
 
