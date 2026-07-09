@@ -131,25 +131,25 @@ const CaseDetails = () => {
     doc.setFont('helvetica', 'bold');
     doc.text(`Undertrial Name:`, 20, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text(caseInfo.undertrialName, 65, yPos);
+    doc.text(String(caseInfo.undertrialName || 'N/A'), 65, yPos);
     yPos += 10;
     
     doc.setFont('helvetica', 'bold');
     doc.text(`Case ID:`, 20, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text(caseInfo.caseId, 65, yPos);
+    doc.text(String(caseInfo.caseId || 'N/A'), 65, yPos);
     yPos += 10;
     
     doc.setFont('helvetica', 'bold');
     doc.text(`Court:`, 20, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text(caseInfo.court, 65, yPos);
+    doc.text(String(caseInfo.court || 'N/A'), 65, yPos);
     yPos += 10;
     
     doc.setFont('helvetica', 'bold');
     doc.text(`Police Assessment:`, 20, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text(caseInfo.policeAssessment, 65, yPos);
+    doc.text(String(caseInfo.policeAssessment || 'N/A'), 65, yPos);
     yPos += 15;
     
     doc.line(20, yPos, 190, yPos);

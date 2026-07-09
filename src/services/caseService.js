@@ -3,11 +3,10 @@ import { collection, getDocs, doc, getDoc, query, where, orderBy, onSnapshot, ad
 
 export const getCases = async (userId, role) => {
   let q = collection(db, 'cases');
-  if (role === 'lawyer') {
-    q = query(q, where('lawyerId', '==', userId));
-  } else if (role === 'family') {
+  if (role === 'family') {
     q = query(q, where('familyEmail', '==', auth.currentUser?.email));
   }
+  // Lawyers see all cases in demo mode
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
@@ -20,12 +19,11 @@ export const createCase = async (caseData) => {
 
 export const subscribeToCases = (userId, role, callback) => {
   let q = collection(db, 'cases');
-  if (role === 'lawyer') {
-    q = query(q, where('lawyerId', '==', userId));
-  } else if (role === 'family') {
+  if (role === 'family') {
     q = query(q, where('familyEmail', '==', auth.currentUser?.email));
   }
   
+  // Lawyers see all cases in demo mode
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   });
