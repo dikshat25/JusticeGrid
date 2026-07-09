@@ -71,10 +71,7 @@ const Profile = () => {
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
-            <button className="btn btn-outline">Change Password</button>
-            <button className="btn btn-primary">Edit Profile</button>
-          </div>
+
         </div>
       </div>
     </motion.div>
