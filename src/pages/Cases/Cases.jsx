@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { getCases } from '../../services/caseService';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Cases = () => {
   const [cases, setCases] = useState([]);
@@ -11,11 +12,12 @@ const Cases = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState('All');
   const navigate = useNavigate();
+  const { userData, currentUser } = useAuth();
 
   useEffect(() => {
     const fetchCases = async () => {
       try {
-        const data = await getCases();
+        const data = await getCases(currentUser.uid, userData?.role);
         setCases(data);
         setFilteredCases(data);
       } catch (error) {
@@ -24,8 +26,10 @@ const Cases = () => {
         setLoading(false);
       }
     };
-    fetchCases();
-  }, []);
+    if (currentUser && userData) {
+      fetchCases();
+    }
+  }, [currentUser, userData]);
 
   useEffect(() => {
     let result = cases;
@@ -49,9 +53,16 @@ const Cases = () => {
       animate={{ opacity: 1 }}
       className="cases-page"
     >
-      <div className="dashboard-header">
-        <h1>All Cases</h1>
-        <p>Manage and monitor undertrial case files.</p>
+      <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1>Assigned Cases</h1>
+          <p>Manage and monitor undertrial case files in your roster.</p>
+        </div>
+        {userData?.role === 'lawyer' && (
+          <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={() => navigate('/dashboard/cases/new')}>
+            <Plus size={18} /> Create New Case
+          </button>
+        )}
       </div>
 
       <div className="card" style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -90,6 +101,7 @@ const Cases = () => {
                 <th>Name</th>
                 <th>Court</th>
                 <th>Priority</th>
+                <th>AI Review</th>
                 <th>Police Assessment</th>
                 <th>Action</th>
               </tr>
@@ -112,6 +124,13 @@ const Cases = () => {
                     <span className={`badge badge-${c.priority === 'High' ? 'urgent' : 'pending'}`}>
                       {c.priority}
                     </span>
+                  </td>
+                  <td>
+                    {c.analysisCompleted ? (
+                      <span className="badge badge-eligible">Completed</span>
+                    ) : (
+                      <span className="badge badge-pending">Pending</span>
+                    )}
                   </td>
                   <td>
                     <span className={`badge badge-${c.policeAssessment === 'Eligible for Bail' ? 'eligible' : 'pending'}`}>

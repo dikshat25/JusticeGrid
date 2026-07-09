@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
+import AIAssistant from '../AIAssistant/AIAssistant';
 import './Layout.css';
 
 const DashboardLayout = () => {
@@ -14,6 +15,7 @@ const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
+      <AIAssistant />
     </div>
   );
 };

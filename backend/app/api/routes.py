@@ -1,5 +1,6 @@
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
+from typing import Optional, List
 import uuid
 import time
 from app.graph.workflow import execute_graph
@@ -7,12 +8,74 @@ from app.services.firestore_service import firestore_service
 from app.services.parser_service import parser_service
 from app.services.event_bus import event_bus
 from app.services.task_runner import task_runner
+from app.services.ocr_service import ocr_service
+from app.services.document_parser import document_parser
 
 router = APIRouter()
 
 class AnalyzeRequest(BaseModel):
     case_id: str
     document_urls: list[str] = []
+
+@router.post("/cases/create")
+async def create_case(
+    file: UploadFile = File(...),
+    lawyer_id: str = Form(None)
+):
+    try:
+        # 1. Read file
+        file_bytes = await file.read()
+        
+        # OCR has been intentionally removed for FIRs due to poor handwriting accuracy.
+        # The lawyer will manually fill in the form. We return an empty extracted_data dict.
+        
+        return {
+            "status": "success",
+            "extracted_data": {}
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Unable to confidently extract. Please fill manually.")
+
+@router.post("/documents/upload")
+async def upload_document(
+    file: UploadFile = File(...),
+    case_id: str = Form(...),
+    uploaded_by: str = Form(...)
+):
+    try:
+        file_bytes = await file.read()
+        
+        ocr_text = ocr_service.process_file(file_bytes, file.filename)
+        
+        classification = await document_parser.classify_document(ocr_text)
+        
+        doc_data = {
+            "caseId": case_id,
+            "uploadedBy": uploaded_by,
+            "ocrText": ocr_text,
+            "documentType": classification.documentType,
+            "summary": classification.summary,
+            "verified": False,
+            "approvedBy": None
+        }
+        
+        doc_id = await firestore_service.save_document(doc_data)
+        
+        # In a real app we'd trigger a notification here to the assigned lawyer
+        
+        return {
+            "status": "success",
+            "document_id": doc_id,
+            "classification": classification.model_dump()
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Document processing failed.")
 
 async def process_case_background(case_id: str, document_urls: list[str]):
     # 1. Load Case from Firestore
@@ -139,3 +202,76 @@ async def debug_case(case_id: str):
         "timeline": latest_run.get("timeline", []),
         "transcript": latest_run.get("transcript", [])
     }
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatContext(BaseModel):
+    user_role: str
+    current_page: str
+    case_id: Optional[str] = None
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
+    context: ChatContext
+
+@router.post("/chat")
+async def chat_with_assistant(request: ChatRequest):
+    from app.services.llm_service import llm_service
+    try:
+        # Build System Prompt
+        system_prompt = (
+            "You are the JusticeGrid Legal Assistant, a helpful AI guide built into the JusticeGrid platform. "
+            "JusticeGrid is a legal tech platform that accelerates bail processes for undertrials using multi-agent AI. "
+            f"You are currently speaking to a user with the role: {request.context.user_role.upper()}. "
+            f"They are currently on the page: {request.context.current_page}. "
+            "Your scope is to explain JusticeGrid features, explain AI outputs (like Eligibility or Strategy agent reasoning), "
+            "explain legal terminology simply, and guide users through the platform. "
+            "NEVER provide official legal advice or claim to replace a lawyer. Keep answers concise, clear, and empathetic.\n\n"
+        )
+        
+        # Add context if a case is open
+        if request.context.case_id:
+            case_data = await firestore_service.get_case(request.context.case_id)
+            if case_data:
+                system_prompt += f"CONTEXT - The user is currently viewing Case ID: {request.context.case_id}.\n"
+                system_prompt += f"Undertrial Name: {case_data.get('undertrialName', 'Unknown')}\n"
+                system_prompt += f"Charges: {case_data.get('charges', 'Unknown')}\n"
+                system_prompt += f"Next Hearing: {case_data.get('nextHearing', 'Unknown')}\n"
+                
+                # Fetch AI analysis if available
+                if case_data.get('analysisCompleted'):
+                    from google.cloud import firestore
+                    doc_ref = firestore_service.db.collection('case_analyses').document(request.context.case_id)
+                    doc_snap = doc_ref.get()
+                    if doc_snap.exists:
+                        analysis = doc_snap.to_dict()
+                        if analysis.get('final_report'):
+                            system_prompt += f"AI Final Verdict: {analysis['final_report'].get('result', {}).get('recommendation', '')}\n"
+                            system_prompt += f"AI Reasoning: {analysis['final_report'].get('result', {}).get('reasoning', '')}\n"
+        
+        # Format messages for the LLM
+        # For simplicity, we just format the history into a block of text, 
+        # then append the final user message to be answered.
+        history_text = ""
+        for msg in request.messages[:-1]:
+            prefix = "User" if msg.role == "user" else "Assistant"
+            history_text += f"{prefix}: {msg.content}\n"
+            
+        current_question = request.messages[-1].content
+        
+        final_prompt = f"{system_prompt}\n"
+        if history_text:
+            final_prompt += f"--- Chat History ---\n{history_text}\n"
+        final_prompt += f"--- Current Question ---\nUser: {current_question}\nAssistant:"
+        
+        # Generate response
+        response = await llm_service.generate_with_fallback(prompt=final_prompt)
+        
+        return {"status": "success", "reply": response["result"]}
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Failed to generate AI response.")

@@ -9,6 +9,7 @@ import Signup from './pages/Signup/Signup';
 import DashboardLayout from './components/Layout/DashboardLayout';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Cases from './pages/Cases/Cases';
+import NewCase from './pages/Cases/NewCase';
 import CaseDetails from './pages/CaseDetails/CaseDetails';
 import AIReports from './pages/AIReports/AIReports';
 import Notifications from './pages/Notifications/Notifications';
@@ -33,6 +34,7 @@ const AppContent = () => {
         <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
           <Route path="cases" element={<Cases />} />
+          <Route path="cases/new" element={<NewCase />} />
           <Route path="cases/:id" element={<CaseDetails />} />
           <Route path="ai-reports" element={<AIReports />} />
           <Route path="notifications" element={<Notifications />} />

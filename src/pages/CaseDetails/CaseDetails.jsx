@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { subscribeToCase, getDocumentsByCaseId, getCaseAnalysis } from '../../services/caseService';
 import { getHearingsByCaseId } from '../../services/hearingService';
 import { getFamilyUpdatesByCaseId } from '../../services/familyService';
 import { ArrowLeft, FileText, BrainCircuit, Clock, Users, FileIcon, CheckCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import jsPDF from 'jspdf';
 import './CaseDetails.css';
 import Courtroom from '../../components/Courtroom/Courtroom';
@@ -20,6 +20,47 @@ const CaseDetails = () => {
   });
   const [loading, setLoading] = useState(true);
   const [showCourtroom, setShowCourtroom] = useState(false);
+  const [showWhy, setShowWhy] = useState(false);
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('case_id', id);
+    formData.append('uploaded_by', userData?.role || 'family');
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/v1/documents/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload document');
+      }
+
+      const result = await response.json();
+      alert(`Document Analyzed Successfully!\nType: ${result.classification?.documentType}\nSummary: ${result.classification?.summary}`);
+      
+      // Refresh documents list
+      const updatedDocs = await getDocumentsByCaseId(id);
+      setData(prev => ({...prev, documents: updatedDocs}));
+      
+    } catch (err) {
+      console.error(err);
+      alert('Error uploading document. Ensure backend is running.');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   useEffect(() => {
     let unsubscribe;
@@ -175,8 +216,7 @@ const CaseDetails = () => {
     { id: 'overview', label: 'Overview', icon: <FileText size={16} /> },
     { id: 'timeline', label: 'Timeline', icon: <Clock size={16} /> },
     { id: 'documents', label: 'Documents', icon: <FileIcon size={16} /> },
-    { id: 'ai', label: 'AI Analysis', icon: <BrainCircuit size={16} /> },
-    { id: 'family', label: 'Family Updates', icon: <Users size={16} /> }
+    { id: 'ai', label: 'AI Analysis', icon: <BrainCircuit size={16} /> }
   ];
 
   return (
@@ -216,7 +256,14 @@ const CaseDetails = () => {
       <div className="tab-content card">
         {activeTab === 'overview' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="overview-tab">
-            <h3>Case Summary</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0 }}>Case Summary</h3>
+              {caseInfo.analysisCompleted && analysis?.final_report && (
+                <button className="btn btn-primary" onClick={handleDownloadReport}>
+                  Download Legal Report
+                </button>
+              )}
+            </div>
             <p className="summary-text">{caseInfo.summary}</p>
             
             <div className="details-grid">
@@ -316,20 +363,67 @@ const CaseDetails = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="documents-tab">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h3>Case Documents</h3>
-              <button className="btn btn-primary">Request Document</button>
+              {userData?.role === 'family' ? (
+                <>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    style={{ display: 'none' }} 
+                    onChange={handleFileUpload} 
+                    accept="image/*,.pdf"
+                  />
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={() => fileInputRef.current.click()}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? 'Analyzing AI...' : 'Upload New Document'}
+                  </button>
+                </>
+              ) : (
+                <button className="btn btn-outline">Request Document</button>
+              )}
             </div>
+
             <div className="documents-grid">
               {data.documents.map(doc => (
-                <div key={doc.id} className="document-card">
+                <div key={doc.id} className="document-card" style={{ border: doc.approved === false ? '2px solid var(--status-pending)' : 'none' }}>
                   <FileIcon size={32} className="doc-icon" />
-                  <div className="doc-info">
-                    <h4>{doc.documentName}</h4>
-                    <p>{doc.documentType} • {doc.fileSize}</p>
-                    <span className="doc-date">Uploaded: {new Date(doc.uploadedDate).toLocaleDateString()}</span>
+                  <div className="doc-info" style={{ flex: 1 }}>
+                    <h4>{doc.documentType || doc.documentName}</h4>
+                    <p>{doc.summary || doc.documentName}</p>
+                    <span className="doc-date">Uploaded: {new Date(doc.uploadedDate || doc.uploadedAt).toLocaleDateString()}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+                    {doc.approved === false ? (
+                      <span className="badge badge-pending">Pending Approval</span>
+                    ) : (
+                      <span className="badge badge-eligible">Approved</span>
+                    )}
+                    {userData?.role === 'lawyer' && doc.approved === false && (
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem' }}
+                        onClick={() => {
+                          import('../../services/caseService').then(({ approveDocument }) => {
+                            approveDocument(doc.id).then(() => {
+                              alert("Document approved!");
+                            });
+                          });
+                        }}
+                      >
+                        Approve
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
+            {data.documents.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                No documents have been uploaded to this case yet.
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -374,9 +468,67 @@ const CaseDetails = () => {
             {analysis && !showCourtroom && (
               <div className="final-verdict-container">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid rgba(0,0,0,0.1)', paddingBottom: '1rem' }}>
-                  <h2 style={{ margin: 0, color: 'var(--accent-brown)' }}>Final Judgment</h2>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <h2 style={{ margin: 0, color: 'var(--accent-brown)' }}>Final Judgment</h2>
+                    <button className="btn btn-outline" onClick={() => setShowWhy(!showWhy)} style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>
+                      {showWhy ? 'Hide Breakdown' : 'Why?'}
+                    </button>
+                  </div>
                   <button className="btn btn-primary" onClick={handleDownloadReport}>Download Legal Report</button>
                 </div>
+
+                <AnimatePresence>
+                  {showWhy && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }} 
+                      animate={{ opacity: 1, height: 'auto' }} 
+                      exit={{ opacity: 0, height: 0 }}
+                      className="why-breakdown-card card"
+                      style={{ marginBottom: '1.5rem', background: '#f8fafc', borderLeft: '4px solid #3b82f6', overflow: 'hidden' }}
+                    >
+                      <h3 style={{ marginTop: 0, color: '#1e293b' }}>Decision Breakdown</h3>
+                      
+                      <div style={{ marginBottom: '1.5rem' }}>
+                        <h4 style={{ marginBottom: '0.5rem', color: '#475569' }}>Reasons:</h4>
+                        <ul style={{ paddingLeft: '1.5rem', color: '#334155', lineHeight: '1.6' }}>
+                          {analysis.merged_data?.eligibility?.result?.reasoning && (
+                            <li><strong>Statutory Threshold:</strong> {analysis.merged_data.eligibility.result.reasoning}</li>
+                          )}
+                          {analysis.merged_data?.delay?.result?.reasoning && (
+                            <li><strong>Delay Analysis:</strong> {analysis.merged_data.delay.result.reasoning}</li>
+                          )}
+                          {analysis.merged_data?.financial?.result?.reasoning && (
+                            <li><strong>Financial Status:</strong> {analysis.merged_data.financial.result.reasoning}</li>
+                          )}
+                          <li><strong>Overall Logic:</strong> {analysis.final_report?.result?.reasoning}</li>
+                        </ul>
+                      </div>
+
+                      <div style={{ marginBottom: '1.5rem' }}>
+                        <h4 style={{ marginBottom: '0.5rem', color: '#475569' }}>Agents that supported the decision:</h4>
+                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                          {['eligibility', 'delay', 'financial', 'strategy'].map(agent => (
+                            <div key={agent} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', padding: '0.5rem 1rem', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                              <CheckCircle size={14} color="#10b981" />
+                              <span style={{ textTransform: 'capitalize', fontSize: '0.85rem', fontWeight: 500, color: '#334155' }}>{agent} Agent</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 style={{ marginBottom: '0.5rem', color: '#475569' }}>Legal Sections Used:</h4>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          {(analysis.final_report?.result?.legal_references || "Section 479 BNSS, Article 21 Constitution").split(/[,;]/).map((ref, idx) => (
+                            <span key={idx} style={{ background: '#e0f2fe', color: '#0369a1', padding: '0.3rem 0.8rem', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 500 }}>
+                              {ref.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 
                 <div className="verdict-summary card" style={{ background: '#fef3c7', borderColor: '#d97706', marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
@@ -413,32 +565,7 @@ const CaseDetails = () => {
           </motion.div>
         )}
 
-        {activeTab === 'family' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="family-tab">
-            <h3>Family Communications</h3>
-            <div className="family-updates-list">
-              {data.familyUpdates.map(update => (
-                <div key={update.id} className="family-update-card">
-                  <div className="update-date">{new Date(update.date).toLocaleDateString()}</div>
-                  <div className="update-langs">
-                    <div className="lang-box">
-                      <span className="lang-label">English</span>
-                      <p>{update.english}</p>
-                    </div>
-                    <div className="lang-box">
-                      <span className="lang-label">Hindi</span>
-                      <p>{update.hindi}</p>
-                    </div>
-                    <div className="lang-box">
-                      <span className="lang-label">Marathi</span>
-                      <p>{update.marathi}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
+
       </div>
     </motion.div>
   );

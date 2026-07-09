@@ -74,14 +74,16 @@ const Dashboard = () => {
           const healthRes = await fetch('http://127.0.0.1:8000/api/v1/health').then(r => r.ok ? r.json() : null).catch(() => null);
           setHealth(healthRes);
         }
-        const notifData = await getNotifications();
-        setNotifications(notifData);
+        if (currentUser) {
+          const notifData = await getNotifications(currentUser.uid, userData?.role);
+          setNotifications(notifData);
+        }
       } catch (e) {
         console.error(e);
       }
     };
     fetchAncillaryData();
-  }, [isAdmin, isLawyer]);
+  }, [isAdmin, isLawyer, currentUser, userData]);
 
   if (loading) return <div className="loading-spinner" style={{ margin: 'auto' }}></div>;
 
@@ -145,7 +147,12 @@ const Dashboard = () => {
       )}
 
       <div className="dashboard-grid" style={isFamily ? { gridTemplateColumns: '1fr' } : {}}>
-        <div className="main-col">
+        <motion.div 
+          className="main-col"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
           <div className="card">
             <div className="card-header">
               <h2>{isFamily ? 'My Case' : isAdmin ? 'All High Priority Cases' : 'My Urgent Cases'}</h2>
@@ -169,8 +176,13 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {(isFamily ? cases : highPriorityCases).slice(0, 5).map(c => (
-                      <tr key={c.id}>
+                    {(isFamily ? cases : highPriorityCases).slice(0, 5).map((c, idx) => (
+                      <motion.tr 
+                        key={c.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 + (idx * 0.1) }}
+                      >
                         <td>{c.caseId}</td>
                         <td>{c.undertrialName}</td>
                         <td>
@@ -188,17 +200,22 @@ const Dashboard = () => {
                         <td>
                           <button className="btn-link" onClick={() => navigate(`/dashboard/cases/${c.id}`)}>View Details</button>
                         </td>
-                      </tr>
+                      </motion.tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {!isFamily && (
-          <div className="side-col">
+          <motion.div 
+            className="side-col"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
             <div className="card">
               <h2>Recent System Alerts</h2>
               <div className="alert-list">
@@ -216,7 +233,7 @@ const Dashboard = () => {
                 ))}
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

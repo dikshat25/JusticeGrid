@@ -137,7 +137,7 @@
 /* Bottom Tier: Specialists */
 .specialists-tier {
   gap: 1.5rem;
-  z-index: 4;
+  z-index: 10;
   padding-bottom: 2rem;
 }
 
