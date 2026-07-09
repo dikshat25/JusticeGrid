@@ -317,3 +317,30 @@
   margin: 0;
   font-size: 0.95rem;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .case-header-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .case-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .tabs-container {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .tab-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    flex: 1 1 calc(50% - 0.5rem);
+    justify-content: center;
+  }
+  .timeline-node {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

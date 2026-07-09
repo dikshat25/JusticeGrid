@@ -104,3 +104,26 @@
   text-align: center;
   text-decoration: underline;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+  
+  .login-left {
+    flex: none;
+    min-height: 250px;
+    padding: 2rem 1rem;
+  }
+  
+  .login-right {
+    flex: none;
+    padding: 1.5rem;
+    align-items: flex-start;
+  }
+  
+  .login-card {
+    padding: 2rem;
+  }
+}

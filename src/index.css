@@ -234,3 +234,18 @@ h1, h2, h3, h4, h5, h6 {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0px;
+    --navbar-height: 60px;
+  }
+  .page-container {
+    padding: 1rem;
+    margin-bottom: 70px;
+  }
+  .card {
+    padding: 1rem;
+  }
+}
